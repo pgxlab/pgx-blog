@@ -1,4 +1,4 @@
-baseURL = "https://hwp9980-source.github.io/pgx-blog/"
+baseURL = "https://pgxlab.github.io/pgx-blog/"
 languageCode = "ko-kr"
 title = "PGX Lab — local AI 클러스터 기록"
 theme = "PaperMod"
