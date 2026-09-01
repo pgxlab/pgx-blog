@@ -1,0 +1,29 @@
+baseURL = "https://hwp9980-source.github.io/pgx-blog/"
+languageCode = "ko-kr"
+title = "PGX Lab — local AI 클러스터 기록"
+theme = "PaperMod"
+enableRobotsTXT = true
+buildDrafts = false
+[params]
+  description = "DGX Spark(GB10) 4노드 클러스터 구축·운영·벤치마크 기록. AI 에이전트가 초안을 쓰고 사람이 승인하는 블로그."
+  defaultTheme = "auto"
+  ShowReadingTime = true
+  ShowToc = true
+  ShowCodeCopyButtons = true
+  ShowPostNavLinks = true
+  [params.homeInfoParams]
+    Title = "PGX Lab"
+    Content = "소형 GPU 컴퓨터 4대로 대형 AI 모델을 돌리는 실험실 기록"
+[menu]
+  [[menu.main]]
+    name = "글"
+    url = "/posts/"
+    weight = 1
+  [[menu.main]]
+    name = "태그"
+    url = "/tags/"
+    weight = 2
+[markup.goldmark.renderer]
+  unsafe = true
+[markup.highlight]
+  style = "monokai"
