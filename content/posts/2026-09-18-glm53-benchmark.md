@@ -8,6 +8,15 @@ summary = "GB10 4대 TP=4로 서빙 중인 GLM-5.3-Flash NVFP4를 밤새 재 봤
 
 > 운영 문서에서 IP·호스트명·계정·자격증명을 제거한 버전. 노드는 node1~node4로 표기. 측정은 2026-09-17 23:00 ~ 09-18 10:30 KST, 모든 값은 이 클러스터 한 구성의 실측이며 일반화하지 말 것.
 
+## 요약
+
+- **처리량**: 한국어 실프롬프트 단일 스트림 12~13 tok/s, 동시 32에서 집계 145 tok/s. 병목은 드래프터 수용률(한국어 20%)과 ~185 ms의 TP=4 검증 스텝. 드래프트 길이 k=7→3으로 줄이면 단일 −12%, 동시 32 +18%(171 tok/s).
+- **프리필**: 32k 입력 TTFT 20초, 128k 60초. 긴 문서 RAG의 사용성 한계는 여기.
+- **정확도**(thinking OFF): MMLU 87.9 / MMLU-Pro 77.6 / KMMLU 64.5 / KorMedMCQA 85.4 / MedQA 86.3 / GSM8K 94.5 / HumanEval 75.0. 영어↔한국어 22%p 격차, 의사 국시는 높음.
+- **생성 없는 결정(jevlike)**: 첫 토큰 logit만 읽는 방식으로 KorMedMCQA 의사 435문항 85~86% — 같은 모델의 5-shot 생성(83.9)보다 높고, TypeSafe Jev 독립 벤치(80~82)보다 높다. 417 ms/건, 미보정 신뢰도가 정확도와 단조. temperature 0에서도 3.4%는 실행마다 답이 바뀐다.
+- **운영**: 9.5시간 연속 부하에 크래시·워치독 오탐·스로틀 0. GPU 63~66℃, head CPU 82℃.
+- **삽질**: vLLM `stop` 4개 제한, HumanEval chat 모드 채점 함정(17% vs 75%), thinking 기본값은 서버 인자에 있음.
+
 ## 구성
 
 - 서빙: GLM-5.3-Flash NVFP4(RedHatAI compressed-tensors, ~185GB) + DFlash2 드래프터, vLLM 커스텀 이미지(sm121), 4노드 TP=4, RoCE 200G, fp8 KV 16GiB, 컨텍스트 1M, `--enforce-eager`, GPU 클럭 2000MHz 캡.
@@ -18,6 +27,8 @@ summary = "GB10 4대 TP=4로 서빙 중인 GLM-5.3-Flash NVFP4를 밤새 재 봤
 ## 1. 처리량 — 한국어 실프롬프트
 
 프롬프트 20종(재활의학 판독·기획실 보고서·인프라 코드 등, 한국어 위주), 출력 512토큰 고정(`--ignore-eos`).
+
+![동시성별 집계 처리량과 스트림당 속도, k=7 vs k=3](/pgx-blog/images/glm53-throughput.png)
 
 | 동시성 | 집계 tok/s | 스트림당 tok/s | TTFT p50 | ITL p50 |
 |---|---|---|---|---|
@@ -47,7 +58,9 @@ summary = "GB10 4대 TP=4로 서빙 중인 GLM-5.3-Flash NVFP4를 밤새 재 봤
 
 ### 온도
 
-성능 벤치 45분 동안 4노드 10초 간격 로깅(GPU + ACPI 열영역 7개). 최고치: GPU 63~66℃, GPU 존 66~70℃, CPU P코어 존은 head 82℃ / 워커 68~75℃. 임계 104.8℃, 스로틀 플래그 0. head의 CPU가 워커보다 10℃ 높은 건 API 서버·스케줄러·벤치 클라이언트가 한 노드에 있어서다. 팬 RPM·PWM은 OS에 노출되지 않아 제어 불가.
+성능 벤치 후반 45분(동시 16 → 32 → 랜덤 → 32k/128k 프리필) 동안 4노드 10초 간격 로깅(GPU + ACPI 열영역 7개). 최고치: GPU 63~66℃, GPU 존 66~70℃, CPU P코어 존은 head 82℃ / 워커 68~75℃. 임계 104.8℃, 스로틀 플래그 0. head의 CPU가 워커보다 10℃ 높은 건 API 서버·스케줄러·벤치 클라이언트가 한 노드에 있어서다. 팬 RPM·PWM은 OS에 노출되지 않아 제어 불가.
+
+![4노드 GPU·CPU 열영역 트레이스](/pgx-blog/images/glm53-thermal.png)
 
 ## 2. 정확도 — lm-evaluation-harness 0.4.13
 
@@ -67,6 +80,8 @@ thinking OFF, temperature 0, 동시 16. 객관식은 두 경로로 나눠 돌렸
 | MedMCQA 0-shot | 로그확률 | 4,183 | **76.4%** |
 | GSM8K 5-shot | 생성(chat) | 1,319 | **94.5%** |
 | HumanEval 0-shot | 생성(completions) | 164 | **75.0%** pass@1 |
+
+![lm-eval 9종 정확도](/pgx-blog/images/glm53-lmeval.png)
 
 - 영어(MMLU 88) 대 한국어(KMMLU 64~66) 격차 22%p. 한국 의사 국시(KorMedMCQA)는 85로 상대적으로 높다 — 도메인 지식과 언어 능력은 다른 축이다.
 - 소요: MMLU 2.5h(3.4 req/s), KMMLU 3h(1.5 req/s, 한국어 5-shot 프롬프트가 길다), 전체 약 9.5시간.
@@ -93,6 +108,8 @@ thinking OFF, temperature 0, 동시 16. 객관식은 두 경로로 나눠 돌렸
 | 출력 토큰 | 0 | 0 | 생성 |
 
 같은 모델·같은 셋에서 lm-eval 5-shot 생성(83.9%)보다 0-shot logit 판독(85~86%)이 오히려 높았다. 첫 토큰 분포가 답을 이미 담고 있다.
+
+![jevlike vs Jev vs Luna 정확도, 신뢰도-정확도](/pgx-blog/images/glm53-jevlike.png)
 
 ### 확률은 쓸 만한가
 
