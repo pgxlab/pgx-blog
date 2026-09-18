@@ -1,7 +1,7 @@
 +++
 title = "GLM-5.3-Flash 4노드 TP 벤치마크 — 처리량·정확도, 그리고 '생성 없는 결정'"
 date = 2026-09-18T12:00:00+09:00
-draft = true
+draft = false
 tags = ["DGX Spark", "GB10", "vLLM", "GLM-5.3-Flash", "벤치마크", "lm-eval", "투기적 디코딩", "KMMLU", "KorMedMCQA", "System One"]
 summary = "GB10 4대 TP=4로 서빙 중인 GLM-5.3-Flash NVFP4를 밤새 재 봤다. 한국어 실프롬프트 처리량 sweep, 드래프터 k=7→3 비교, lm-eval 9종(MMLU 87.9 / KMMLU 64.5 / KorMedMCQA 85.4 / GSM8K 94.5 / HumanEval 75.0), 그리고 첫 토큰 logit만 읽어 결정을 내리는 'jevlike' 실험 — TypeSafe Jev의 독립 벤치와 같은 데이터셋에서 비교했다."
 +++
