@@ -138,6 +138,8 @@ temperature 0으로 두 번 돌렸는데 **435건 중 15건(3.4%)의 선택이 �
 | 생성 직답 ("한 글자만") | 837 ms |
 | thinking ON | 13.5 s (164~696 토큰) |
 
+![jevlike vs thinking ON 지연 비교](/pgx-blog/images/glm53-jevlike-speed.png)
+
 thinking OFF 직답 생성과의 차이는 디코드 2스텝, 1.8배다. "수십~수백 배"는 CoT 대비 수치다. jevlike의 가치는 속도보다 **확률과 마진을 얻는다는 것**, 출력 파싱이 없다는 것, 병렬화하면 처리량이 프리필 한도까지 선형으로 오른다는 것이다.
 
 ### Jev에 대한 판단
