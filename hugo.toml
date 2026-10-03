@@ -11,6 +11,13 @@ buildDrafts = false
   ShowToc = true
   ShowCodeCopyButtons = true
   ShowPostNavLinks = true
+  comments = true
+  goatcounter = ""            # GoatCounter 사이트 코드 (비어 있으면 미삽입)
+  [params.giscus]
+    repo = "pgxlab/pgx-blog"
+    repoID = "R_kgDOUKcKdw"
+    category = "Announcements"
+    categoryID = ""            # Discussions 활성화 후 채움 (비어 있으면 미삽입)
   [params.homeInfoParams]
     Title = "PGX Lab"
     Content = "소형 GPU 컴퓨터 4대로 대형 AI 모델을 돌리는 실험실 기록"
