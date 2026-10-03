@@ -12,7 +12,7 @@ buildDrafts = false
   ShowCodeCopyButtons = true
   ShowPostNavLinks = true
   comments = true
-  goatcounter = ""            # GoatCounter 사이트 코드 (비어 있으면 미삽입)
+  goatcounter = "pgxlab"            # GoatCounter 사이트 코드 (비어 있으면 미삽입)
   [params.giscus]
     repo = "pgxlab/pgx-blog"
     repoID = "R_kgDOUKcKdw"
